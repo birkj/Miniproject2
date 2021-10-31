@@ -28,6 +28,7 @@ type Server struct {
 
 func (s *Server) CreateStream(pconn *pb.Connect, stream pb.ChittyChat_CreateStreamServer) error { // Once a user wants to connect, we create a stream object and add their usercredentials to it in a connection stuct
 	conn := &Connection{
+		id:     pconn.User.Id,
 		stream: stream,
 		active: true,
 		error:  make(chan error),
@@ -56,6 +57,10 @@ func (s *Server) BroadcastMessage(ctx context.Context, msg *pb.ChatMessage) (*pb
 	log.Println("From:", msg.From.Name, "Message:", msg.Message, "Timestamp:", s.logicaltime)
 	s.logicaltime++
 
+	if !msg.From.Active {
+		removeConn(msg.From.Id, s)
+	}
+
 	log.Println("Broadcasting... to all users. Timestamp:", s.logicaltime)
 	for _, conn := range s.Connection {
 
@@ -74,6 +79,14 @@ func (s *Server) BroadcastMessage(ctx context.Context, msg *pb.ChatMessage) (*pb
 	}
 
 	return &pb.Empty{}, nil
+}
+
+func removeConn(id string, s *Server) {
+	for i, conn := range s.Connection {
+		if id == conn.id {
+			s.Connection[i].active = false
+		}
+	}
 }
 
 // func (s *Server) CalculateTime(msg *pb.ChatMessage) []int32 {

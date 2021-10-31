@@ -84,9 +84,10 @@ func main() {
 
 	client = pb.NewChittyChatClient(conn)
 	user := &pb.User{
-		Id:   hex.EncodeToString(id[:]),
-		Name: *name,
-		Time: 1,
+		Id:     hex.EncodeToString(id[:]),
+		Name:   *name,
+		Time:   1,
+		Active: true,
 	}
 
 	connect(user)
@@ -105,6 +106,21 @@ func main() {
 			}
 
 			log.Println("Sending message... Timestamp:", user.Time)
+
+			if msg.Message == "exit" {
+				msg.Message = msg.From.Name + " has left the chat"
+				msg.From.Active = false
+
+				_, err := client.BroadcastMessage(context.Background(), msg)
+				if err != nil {
+					fmt.Printf("error sending message: %v", err)
+					break
+				}
+
+				conn.Close()
+				close(done)
+				break
+			}
 
 			_, err := client.BroadcastMessage(context.Background(), msg)
 			if err != nil {
