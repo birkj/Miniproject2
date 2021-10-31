@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+option go_package = "github.com/birkj/Miniproject2_Jens";
+
+package proto;
+
+message User {
+    string id = 1;
+    string name = 2;
+    int32 time = 3;
+}
+
+message ChatMessage {
+    string id = 1;
+    string from = 2;
+    string message = 3;
+    int32 timeSender = 4;
+}
+
+
+message Empty {}
+
+message Connect {
+    User user = 1;
+    bool active = 2;
+}
+
+service ChittyChat {
+    rpc CreateStream(Connect) returns (stream ChatMessage);
+    rpc BroadcastMessage(ChatMessage) returns (Empty);
+}
+
