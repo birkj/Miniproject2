@@ -12,9 +12,8 @@ message User {
 
 message ChatMessage {
     string id = 1;
-    string from = 2;
+    User from = 2;
     string message = 3;
-    int32 timeSender = 4;
 }
 
 
