@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"sync"
 
 	pb "github.com/birkj/Miniproject2_Jens/proto"
 	"google.golang.org/grpc"
 )
 
 const port = ":8080"
+
+var mutex sync.Mutex
 
 type Connection struct { // Creating a struct to contain each connection from clients
 	stream pb.ChittyChat_CreateStreamServer // Each connection contains a stream object which is used to send the message during the broadcast function
@@ -50,13 +53,13 @@ func (s *Server) CreateStream(pconn *pb.Connect, stream pb.ChittyChat_CreateStre
 }
 
 func (s *Server) BroadcastMessage(ctx context.Context, msg *pb.ChatMessage) (*pb.Empty, error) {
-
+	mutex.Lock()
+	defer mutex.Unlock()
 	cur := s.logicaltime
 	incomming := msg.From.Time
 	s.logicaltime = calcServerTimeLamport(cur, incomming)
 	log.Println("From:", msg.From.Name, "Message:", msg.Message, "Timestamp:", s.logicaltime)
 	s.logicaltime++
-
 	if !msg.From.Active {
 		removeConn(msg.From.Id, s)
 	}

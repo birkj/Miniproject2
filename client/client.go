@@ -22,6 +22,7 @@ const (
 
 var client pb.ChittyChatClient
 var wait *sync.WaitGroup
+var mutex sync.Mutex
 
 func init() {
 	wait = &sync.WaitGroup{}
@@ -42,17 +43,22 @@ func connect(user *pb.User) error {
 	go func(str pb.ChittyChat_CreateStreamClient) {
 		defer wait.Done()
 		for {
+
 			msg, err := str.Recv()
+
 			if err != nil {
 				streamerror = fmt.Errorf("error reading message: %v", err)
 				break
 			}
+			mutex.Lock()
+
 			sendingUserTime := msg.From.Time
 			currentClientTime := user.Time
 
 			user.Time = calcUserTimeLamport(sendingUserTime, currentClientTime)
 
 			log.Println("From: ", msg.From.Name, "Message:", msg.Message, "Timestamp:", user.Time)
+			mutex.Unlock()
 		}
 	}(stream)
 	return streamerror
