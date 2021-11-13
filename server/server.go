@@ -33,6 +33,7 @@ func (s *Server) CreateStream(pconn *pb.Connect, stream pb.ChittyChat_CreateStre
 	conn := &Connection{
 		id:     pconn.User.Id,
 		stream: stream,
+		name:   pconn.User.Name,
 		active: true,
 		error:  make(chan error),
 	}
@@ -91,21 +92,6 @@ func removeConn(id string, s *Server) {
 		}
 	}
 }
-
-// func (s *Server) CalculateTime(msg *pb.ChatMessage) []int32 {
-// 	var times []int32
-
-// 	times = append(times, s.logicaltime)
-
-// 	for _, conn := range s.Connection {
-// 		if msg.GetId() == conn.id {
-// 			conn.logicaltime += 1
-// 		}
-// 		times = append(times, conn.logicaltime)
-// 	}
-
-// 	return times
-// }
 
 func calcServerTimeLamport(cur int32, incomming int32) int32 {
 

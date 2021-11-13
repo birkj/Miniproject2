@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/birkj/Miniproject2_Jens";
+option go_package = "/proto";
 
 package proto;
 
